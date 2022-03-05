@@ -5,3 +5,4 @@ export default function Users() {
     <div>This is the Users route</div>
   )
 }
+

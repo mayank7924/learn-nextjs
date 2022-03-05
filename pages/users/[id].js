@@ -1,12 +1,13 @@
 import React from "react";
 import { useRouter } from "next/router";
+import { fetchUsers, fetchUserById } from "../../src/db";
 
 export default function User(props) {
   const router = useRouter();
   const { id } = router.query;
   return (
     <div>
-      Details for userId {id}
+      Details page for userId {id}
       {Object.keys(props.user).map((key) => (
         <li key={key}>
           {key.toUpperCase()}: {props.user[key]}
@@ -17,25 +18,22 @@ export default function User(props) {
 }
 
 export async function getStaticPaths() {
-  const response = await fetch(`https://reqres.in/api/users`);
-  const result = await response.json();
-  console.log("api call made successfully");
-
+  const response = await fetchUsers();
   // Get the paths we want to pre-render based on posts
-  const paths = result.data.map((user) => ({
+  console.log("users fetched, total users:", response.length);
+  const paths = response.map((user) => ({
     params: { id: user.id.toString() },
   }))
-  console.log(paths)
-  return { paths, fallback: false }
+
+  return { paths, fallback: "blocking" }
 }
 
 export async function getStaticProps({ params }) {
-  const response = await fetch(`https://reqres.in/api/users/${params.id}`);
-  const result = await response.json();
-  console.log("api call made successfully");
+  const user = await fetchUserById(params.id);
   return {
     props: {
-      user: result.data,
+      user,
     },
+    revalidate: 20, // In seconds
   };
 }
